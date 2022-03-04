@@ -1,11 +1,61 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  location  String
+  image     String?
+  role      Role     @default(USER)
+  order     Meal[]
+  reviews   Review[] // A user can have many Reviews 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Meal {
+  id          Int      @id @default(autoincrement())
+  title       String
+  author      User     @relation(fields: [authorId], references: [id])
+  authorId    Int
+  reviews     Review[] // A Meal can have many Reviews
+  price       Int
+  images      String
+  discount    Float    @default(0)
+  categorie   Category @relation(fields: [categorieId], references: [id])
+  categorieId Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Review {
+  id       Int    @id @default(autoincrement())
+  stars    Int
+  text     String
+  meal     Meal   @relation(fields: [mealId], references: [id]) // A Review can have one Meal
+  mealId   Int
+  author   User   @relation(fields: [authorId], references: [id]) // A Review can have one User
+  authorId Int
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  meals     Meal[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+  RESTAURANT
 }
